@@ -2,8 +2,8 @@
 Asks how long your commit took you to code then logs that amount of time in the corresponding JIRA ticket
 
 ## Setup
-- Save the post-commit file at the root of your git project
-  - For example, my file lives here: my-github-project/.git/hooks/post-commit
+- Save the post-commit file in the git hooks directory of your git project
+  - For example, my file lives here: timesheet-githook/.git/hooks/post-commit
 
 ## Usage
 - When you commit on a branch that has a JIRA ticket in the name and you do not log time through a [smart commit](https://confluence.atlassian.com/display/FISHEYE/Using+smart+commits#Usingsmartcommits-TransitionyourJIRAissues), a message will pop up asking how long that commit took to code.
