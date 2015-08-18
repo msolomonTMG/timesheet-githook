@@ -1,2 +1,14 @@
-# timesheet-githook
+# Timesheet Githook
 Asks how long your commit took you to code then logs that amount of time in the corresponding JIRA ticket
+
+## Setup
+- Save the post-commit file at the root of your git project (for example, my file lives here: my-github-project/.git/hooks/post-commit)
+
+## Usage
+- When you commit on a branch that has a JIRA ticket in the name and you do not log time through a [smart commit](https://confluence.atlassian.com/display/FISHEYE/Using+smart+commits#Usingsmartcommits-TransitionyourJIRAissues), a message will pop up asking how long that commit took to code.
+- Answer the question in this format:
+  - 1d (for one day)
+  - 2h (for two hours)
+  - 30m (for thirty minutes)
+  - 1h 10m (for one hour and ten minutes)
+
