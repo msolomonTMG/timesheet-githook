@@ -33,19 +33,21 @@ parse_jira_ticket_in_branch() {
 # Read JIRA credentials if they exist (no shame in useless cat, this is my first bash script!)
 jira_credentials_file=".git/hooks/jira_credentials.txt"
 
+# If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
+ticket=`parse_jira_ticket_in_branch`
+
 if [ -e "$jira_credentials_file" ]; then
   jira_credentials=$(cat "$jira_credentials_file")
 else
   parse_jira_credentials
 fi
 
-if [ "$is_smart_commit" = false ]; then
+log_time(){
   read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
   if [ "$time" = "" ]; then
     exit
   else
-    ticket=`parse_jira_ticket_in_branch`
-    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\"}' -H 'Authorization: Basic $jira_credentials' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$ticket\"/worklog")
+    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
     if [[ $response =~ "201 Created" ]]; then
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
@@ -55,11 +57,28 @@ if [ "$is_smart_commit" = false ]; then
       else
         exit
       fi
+    elif [[ $response =~ "400 Bad Request" ]]; then
+      read -p "[post-commit hook] $time was not logged successfully to $ticket. Check the format of your time. Try again? (y/n) " option
+      if [ $option == "y" ] || [ $option == "Y" ]; then
+        log_time $1 $2
+      else
+        exit
+      fi
     else
-      echo "Not sure"
+      read -p "[post-commit hook] $time was not logged successfully to $ticket for an unknown reason. Try again? (y/n) " option
+      if [ $option == "y" ] || [ $option == "Y" ]; then
+        log_time $1 $2
+      else
+        exit
+      fi
     fi
     exit
   fi
+}
+
+# If the branch has a ticket number and the commit is not a smart commit, prompt the user for time logging
+if [ "$ticket" != "" ] && [ "$is_smart_commit" = false ]; then
+  log_time $jira_credentials $ticket
 else
   exit
 fi
