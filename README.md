@@ -7,9 +7,9 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 ## Setup
 ### Clone the [Gist](https://gist.github.com/msolomonTMG/befb53eb3ceb23509d04)
 - Steps
-  1. ``cd my-github-repository``
-  2. ```git rev-parse --git-dir`/hooks``
-  3. ``wget https://gist.githubusercontent.com/msolomonTMG/befb53eb3ceb23509d04/raw/27520333339ef054b7ecf6ee5253d822131db9e9/post-commit && chmod +x post-commit``
+  1. `` cd my-github-repository ``
+  2. `` `git rev-parse --git-dir`/hooks ``
+  3. `` wget https://gist.githubusercontent.com/msolomonTMG/befb53eb3ceb23509d04/raw/27520333339ef054b7ecf6ee5253d822131db9e9/post-commit && chmod +x post-commit ``
   - Be sure to change the JIRA url if you are not from my organization :)
 
 ## Usage
