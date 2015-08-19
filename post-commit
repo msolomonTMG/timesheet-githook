@@ -29,7 +29,7 @@ jira_credentials_file=".git/hooks/jira_credentials.txt"
 ticket=`parse_jira_ticket_in_branch`
 
 # Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
-commit_message=$(git log -1 HEAD)
+commit_message=$(git log -1 HEAD --pretty=%B)
 if [[ "$commit_message" == *"#time"* ]]; then
   is_smart_commit=true
 else
@@ -48,7 +48,7 @@ log_time(){
   if [ "$time" = "" ]; then
     exit
   else
-    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
+    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\",\"comment\":\"$commit_message\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
     if [[ $response =~ "201 Created" ]]; then
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
