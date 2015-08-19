@@ -1,5 +1,5 @@
 # Timesheet Githook
-Asks how long your commit took you to code then logs that amount of time in the corresponding JIRA ticket
+Asks how long you worked on a commit then logs that amount of time to the corresponding JIRA ticket
 
 ## Setup
 - Save the post-commit file in the git hooks directory of your git project
