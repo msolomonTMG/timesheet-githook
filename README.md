@@ -10,7 +10,7 @@ Asks how long you worked on a commit then logs that amount of time to the corres
   - For example, my file lives here: timesheet-githook/.git/hooks/post-commit
 - Example Steps
   - ``cd my-github-repository/.git/hooks``
-  - ``git clone https://gist.github.com/msolomonTMG/befb53eb3ceb23509d04``
+  - ``git clone https://gist.githubusercontent.com/msolomonTMG/befb53eb3ceb23509d04/raw/27520333339ef054b7ecf6ee5253d822131db9e9/post-commit``
   - Be sure to change the JIRA url if you are not from my organization :)
 
 ## Usage
