@@ -4,8 +4,12 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 ## Example
 ![example](http://i.imgur.com/1qM2ILI.gif)
 
-## Setup
-- Save the post-commit file in the git hooks directory of your git project
+## Setup Options
+### Option 1. Clone the Gist
+- Clone the [Timesheet-Githook Gist](https://gist.github.com/msolomonTMG/befb53eb3ceb23509d04) in the git hooks directory of your git project
+  - For example, my file lives here: timesheet-githook/.git/hooks/post-commit
+### Option 2. Clone the repo
+- Clone this repo in the git hooks directory of your git project
   - For example, my file lives here: timesheet-githook/.git/hooks/post-commit
 
 ## Usage
