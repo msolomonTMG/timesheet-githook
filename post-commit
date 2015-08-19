@@ -1,6 +1,4 @@
 #!/bin/sh
-# Clone this script in your git hook directory
-# Example: my-repo-folder/.git/hooks
 
 echo "[post-commit hook] Commit done!"
 
