@@ -1,0 +1,2 @@
+I took 2 functions from the Monk Seal Software website: Monk Seal http://monksealsoftware.com/add-jira-issue-number-to-git-commit-message/
+Thanks for showing me how to parse the git branch!
