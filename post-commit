@@ -5,6 +5,14 @@ echo "[post-commit hook] Commit done!"
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
+# Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
+commit_message=$(git log -1 HEAD)
+if [[ "$commit_message" == *"#time"* ]]; then
+  is_smart_commit=true
+else
+  is_smart_commit=false
+fi
+
 # Ask for JIRA credentials and store the base64 encoded version of what the user enters
 parse_jira_credentials() {
   read -p "Please enter your jira username and password like this: username:password " credentials
@@ -31,7 +39,7 @@ else
   parse_jira_credentials
 fi
 
-while true; do
+if [ "$is_smart_commit" = false ]; then
   read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
   if [ "$time" = "" ]; then
     exit
@@ -52,4 +60,6 @@ while true; do
     fi
     exit
   fi
-done
+else
+  exit
+fi
