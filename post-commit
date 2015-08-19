@@ -12,7 +12,7 @@ if [ -e "$jira_credentials_file" ]; then
 else
   read -p "Please enter your jira username and password like this: username:password " credentials
   jira_credentials=$(printf "$credentials" | base64)
-  echo "$jira_credentials" > "$jira_credentials_file"
+  echo "$jira_credentials" > "$jira_credentials_file"  
 fi
 
 # Parse the git branch
@@ -23,47 +23,7 @@ parse_git_branch() {
 # Parse the JIRA ticket in the branch
 parse_jira_ticket_in_branch() {
   parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
-}
-
-while true; do
-  read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
-  if [ "$time" = "" ]; then
-    exit
-  else
-    ticket=`parse_jira_ticket_in_branch`
-    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\"}' -H 'Authorization: Basic $jira_credentials' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$ticket\"/worklog")
-    echo "$response"
-    echo "again"
-    echo "$response"
-".git/hooks/post-commit" 50L, 1880C
-    ticket=`parse_jira_ticket_in_branch`
-~/jvaca ❯❯❯ vim .git/hooks/post-commit                           JQWE-1216_fix_readme ✭
-#!/bin/sh
-
-echo "[post-commit hook] Commit done!"
-
-# Allows us to read user input below, assigns stdin to keyboard
-exec < /dev/tty
-
-# Read JIRA credentials if they exist (no shame in useless cat, this is my first bash script!)
-jira_credentials_file=".git/hooks/jira_credentials.txt"
-if [ -e "$jira_credentials_file" ]; then
-  jira_credentials=$(cat "$jira_credentials_file")
-else
-  read -p "Please enter your jira username and password like this: username:password " credentials
-  jira_credentials=$(printf "$credentials" | base64)
-  echo "$jira_credentials" > "$jira_credentials_file"
-fi
-
-# Parse the git branch
-parse_git_branch() {
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-}
-
-# Parse the JIRA ticket in the branch
-parse_jira_ticket_in_branch() {
-  parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
-}
+} 
 
 while true; do
   read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
@@ -73,9 +33,6 @@ while true; do
     ticket=`parse_jira_ticket_in_branch`
     response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\"}' -H 'Authorization: Basic $jira_credentials' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$ticket\"/worklog")
     if [[ $response =~ "201 Created" ]]; then
-      echo "[post-commit hook] $time successfully logged to $ticket!"
-    elif [[ $response =~ "401 Unauthorized" ]]; then
-".git/hooks/post-commit" 44L, 1755C
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
       echo "[post-commit hook] $time was not logged successfully to $ticket. If you have updated your credentials in JIRA, press 'u' to update them here so that this hook works on your next commit. Otherwise, hit enter to ignore."
