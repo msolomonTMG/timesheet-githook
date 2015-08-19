@@ -5,14 +5,6 @@ echo "[post-commit hook] Commit done!"
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
-# Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
-commit_message=$(git log -1 HEAD)
-if [[ "$commit_message" == *"#time"* ]]; then
-  is_smart_commit=true
-else
-  is_smart_commit=false
-fi
-
 # Ask for JIRA credentials and store the base64 encoded version of what the user enters
 parse_jira_credentials() {
   read -p "Please enter your jira username and password like this: username:password " credentials
@@ -30,12 +22,21 @@ parse_jira_ticket_in_branch() {
   parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
 }
 
-# Read JIRA credentials if they exist (no shame in useless cat, this is my first bash script!)
+# Read JIRA credentials if they exist
 jira_credentials_file=".git/hooks/jira_credentials.txt"
 
 # If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
 ticket=`parse_jira_ticket_in_branch`
 
+# Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
+commit_message=$(git log -1 HEAD)
+if [[ "$commit_message" == *"#time"* ]]; then
+  is_smart_commit=true
+else
+  is_smart_commit=false
+fi
+
+# If the user does not have jira credentials stored, we'll need to ask them to enter credentials
 if [ -e "$jira_credentials_file" ]; then
   jira_credentials=$(cat "$jira_credentials_file")
 else
