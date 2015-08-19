@@ -5,15 +5,12 @@ echo "[post-commit hook] Commit done!"
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
-# Read JIRA credentials if they exist (no shame in useless cat, this is my first bash script!)
-jira_credentials_file=".git/hooks/jira_credentials.txt"
-if [ -e "$jira_credentials_file" ]; then
-  jira_credentials=$(cat "$jira_credentials_file")
-else
+# Ask for JIRA credentials and store the base64 encoded version of what the user enters
+parse_jira_credentials() {
   read -p "Please enter your jira username and password like this: username:password " credentials
   jira_credentials=$(printf "$credentials" | base64)
-  echo "$jira_credentials" > "$jira_credentials_file"  
-fi
+  echo "$jira_credentials" > "$jira_credentials_file" 
+}
 
 # Parse the git branch
 parse_git_branch() {
@@ -23,7 +20,16 @@ parse_git_branch() {
 # Parse the JIRA ticket in the branch
 parse_jira_ticket_in_branch() {
   parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
-} 
+}
+
+# Read JIRA credentials if they exist (no shame in useless cat, this is my first bash script!)
+jira_credentials_file=".git/hooks/jira_credentials.txt"
+
+if [ -e "$jira_credentials_file" ]; then
+  jira_credentials=$(cat "$jira_credentials_file")
+else
+  parse_jira_credentials
+fi
 
 while true; do
   read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
@@ -35,7 +41,12 @@ while true; do
     if [[ $response =~ "201 Created" ]]; then
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
-      echo "[post-commit hook] $time was not logged successfully to $ticket. If you have updated your credentials in JIRA, press 'u' to update them here so that this hook works on your next commit. Otherwise, hit enter to ignore."
+      read -p "[post-commit hook] $time was not logged successfully to $ticket. If you have updated your credentials in JIRA, press 'u' to update them here so that this hook works on your next commit. Otherwise, hit enter to ignore. " option
+      if [[ $option == "u" ]]; then
+        parse_jira_credentials
+      else
+        exit
+      fi
     else
       echo "Not sure"
     fi
