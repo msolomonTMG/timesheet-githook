@@ -1,7 +1,5 @@
 #!/bin/sh
 
-echo "[post-commit hook] Commit done!"
-
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
