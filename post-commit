@@ -30,7 +30,7 @@ parse_jira_ticket_in_branch() {
 }
 
 # Read JIRA credentials if they exist
-jira_credentials_file=".git/hooks/jira_credentials.txt"
+jira_credentials_file="`git rev-parse --git-dir`/hooks/jira_credentials.txt"
 
 # If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
 ticket=`parse_jira_ticket_in_branch`
