@@ -7,8 +7,15 @@ exec < /dev/tty
 
 # Ask for JIRA credentials and store the base64 encoded version of what the user enters
 parse_jira_credentials() {
-  read -p "Please enter your jira username and password like this: username:password " credentials
-  jira_credentials=$(printf "$credentials" | base64)
+  echo "Please enter your jira username (not your email): "; 
+  read username;  
+  
+  echo "Please enter your jira password";
+  stty -echo
+  read password;
+  stty echo
+
+  jira_credentials=$(printf "$username":"$password" | base64)
   echo "$jira_credentials" > "$jira_credentials_file" 
 }
 
