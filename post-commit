@@ -24,7 +24,7 @@ parse_git_branch() {
 
 # Parse the JIRA ticket in the branch
 parse_jira_ticket_in_branch() {
-  parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
+  parse_git_branch | grep -e '[A-Za-z]\+-[0-9]\+' -o
 }
 
 # Read JIRA credentials if they exist
