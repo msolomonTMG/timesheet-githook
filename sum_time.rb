@@ -4,7 +4,7 @@ require 'rest-client'
 require 'time'
 
 # Find all issues that are assigned to this user and have a worklog date of today
-url = "#{ENV['JIRA_URL']}/rest/api/2/search?jql=assignee = #{ENV['USERNAME']} and worklogDate = startOfDay()&fields=worklog"
+url = "#{ENV['JIRA_URL']}/rest/api/2/search?jql=assignee=#{ENV['USERNAME']}%20and%20worklogDate=startOfDay()&fields=worklog"
 headers = { 
 	:"Authorization" => "Basic #{ENV['JIRA_CREDENTIALS']}",
 	:"Content-Type" => "application/json"
