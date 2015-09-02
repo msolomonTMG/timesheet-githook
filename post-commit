@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Sets JIRA URL
+jira_url="https://thrillistmediagroup.atlassian.net"
+
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
@@ -14,7 +17,7 @@ parse_jira_credentials() {
   stty echo
 
   jira_credentials=$(printf "$username":"$password" | base64)
-  echo "$jira_credentials" > "$jira_credentials_file" 
+  echo "$jira_credentials" > "$jira_credentials_file"
 }
 
 # Parse the git branch
@@ -24,7 +27,7 @@ parse_git_branch() {
 
 # Parse the JIRA ticket in the branch
 parse_jira_ticket_in_branch() {
-  parse_git_branch | grep -e '[A-Za-z]\+-[0-9]\+' -o
+  parse_git_branch | grep -e '[A-Z]\+-[0-9]\+' -o
 }
 
 # Read JIRA credentials if they exist
@@ -48,12 +51,31 @@ else
   parse_jira_credentials
 fi
 
+# Sum the total amount of time logged today by the user so we can display it later
+get_total_time(){
+  # Decode  the base64 encoded username:password
+  usernamepassword=$(echo "$1" | openssl enc -d -base64)
+  # Keep only the username (needed to for running some queries in JIRA)
+  username=${usernamepassword%:*}
+  # Export these variables so that they can be used in the ruby file
+  export JIRA_CREDENTIALS=$1
+  export JIRA_URL=$jira_url
+  export USERNAME=$username
+  # Use a ruby script to query JIRA for all the time that this user has already logged today
+  total_time=$(ruby `git rev-parse --git-dir`/hooks/sum_time.rb)
+  echo "$total_time"
+}
+
+# The total amount of time logged by the user today
+total_time=`get_total_time $jira_credentials`
+
 log_time(){
-  read -p "[post-commit hook] How long did that take to do? (e.g. 1d 2h 30m) " time
+  echo "[post-commit hook] Time Logged Today: $total_time"
+  read -p "[post-commit hook] How long did that take to do? " time
   if [ "$time" = "" ]; then
     exit
   else
-    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\",\"comment\":\"$commit_message\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://thrillistmediagroup.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
+    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\",\"comment\":\"$commit_message\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' $jira_url/rest/api/2/issue/\"$2\"/worklog")
     if [[ $response =~ "201 Created" ]]; then
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
@@ -84,7 +106,7 @@ log_time(){
 
 # If the branch has a ticket number and the commit is not a smart commit, prompt the user for time logging
 if [ "$ticket" != "" ] && [ "$is_smart_commit" = false ]; then
-  log_time $jira_credentials $ticket
+  log_time $jira_credentials $ticket $total_time
 else
   exit
 fi
