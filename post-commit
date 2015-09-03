@@ -31,7 +31,7 @@ parse_jira_ticket_in_branch() {
 }
 
 # Read JIRA credentials if they exist
-jira_credentials_file="`git rev-parse --git-dir`/hooks/jira_credentials.txt"
+jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_credentials.txt"
 
 # If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
 ticket=`parse_jira_ticket_in_branch`
@@ -62,7 +62,7 @@ get_total_time(){
   export JIRA_URL=$jira_url
   export USERNAME=$username
   # Use a ruby script to query JIRA for all the time that this user has already logged today
-  total_time=$(ruby `git rev-parse --git-dir`/hooks/sum_time.rb)
+  total_time=$(ruby `git rev-parse --git-dir`/hooks/timesheet-githook/sum_time.rb)
   echo "$total_time"
 }
 
