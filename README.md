@@ -8,8 +8,8 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 ### Clone the Post Commit Hook
 - Steps
   1. Open your terminal and change directory to your github repository `` cd my-github-repository ``
-  2. Run this command to change your directory to your git hooks folder (you need the back ticks) `` `git rev-parse --git-dir`/hooks ``
-  3. Copy the git hook and dependencies with this command `` wget https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/count_time_for_today/post-commit && wget https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/count_time_for_today/sum_time.rb && wget https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/count_time_for_today/Gemfile && chmod +x post-commit && chmod +x sum_time.rb && sudo gem install bundler && bundle install ``
+  2. Run this command to change your directory to your git hooks folder (you need the back ticks) `` cd `git rev-parse --git-dir`/hooks ``
+  3. Clone the timesheet git hook and install dependencies with this command: `` git clone https://github.com/msolomonTMG/timesheet-githook.git && ln -s timesheet-githook/post-commit post-commit && chmod +x post-commit && chmod +x timesheet-githook/sum_time.rb && sudo gem install bundler && bundle install ``
   - Be sure to change the JIRA url if you are not from my organization :)
 
 ## Usage

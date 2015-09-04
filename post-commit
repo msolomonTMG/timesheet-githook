@@ -30,29 +30,18 @@ parse_jira_ticket_in_branch() {
   parse_git_branch | grep -e '[A-Za-z]\+-[0-9]\+' -o
 }
 
-# Read JIRA credentials if they exist
-jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_credentials.txt"
-
-# If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
-ticket=`parse_jira_ticket_in_branch`
-
-# Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
-commit_message=$(git log -1 HEAD --pretty=%B)
-if [[ "$commit_message" == *"#time"* ]]; then
-  is_smart_commit=true
-else
-  is_smart_commit=false
-fi
-
-# If the user does not have jira credentials stored, we'll need to ask them to enter credentials
-if [ -e "$jira_credentials_file" ]; then
-  jira_credentials=$(cat "$jira_credentials_file")
-else
-  parse_jira_credentials
-fi
+# function for checking the existance of jira credentials
+check_jira_credentials() {
+  # If the user does not have jira credentials stored, we'll need to ask them to enter credentials
+  if [ -e "$jira_credentials_file" ]; then
+    jira_credentials=$(cat "$jira_credentials_file")
+  else
+    parse_jira_credentials
+  fi
+}
 
 # Sum the total amount of time logged today by the user so we can display it later
-get_total_time(){
+get_total_time() {
   # Decode  the base64 encoded username:password
   usernamepassword=$(echo "$1" | openssl enc -d -base64)
   # Keep only the username (needed to for running some queries in JIRA)
@@ -63,13 +52,15 @@ get_total_time(){
   export USERNAME=$username
   # Use a ruby script to query JIRA for all the time that this user has already logged today
   total_time=$(ruby `git rev-parse --git-dir`/hooks/timesheet-githook/sum_time.rb)
-  echo "$total_time"
+
+  if [ "$total_time" = "unauthorized" ]; then
+    exit
+  else
+    echo "$total_time"
+  fi
 }
 
-# The total amount of time logged by the user today
-total_time=`get_total_time $jira_credentials`
-
-log_time(){
+log_time() {
   echo "[post-commit hook] Time Logged Today: $total_time"
   read -p "[post-commit hook] How long did that take to do? " time
   if [ "$time" = "" ]; then
@@ -103,6 +94,26 @@ log_time(){
     exit
   fi
 }
+
+# Read JIRA credentials if they exist
+jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_credentials.txt"
+
+# If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
+ticket=`parse_jira_ticket_in_branch`
+
+# Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
+commit_message=$(git log -1 HEAD --pretty=%B)
+if [[ "$commit_message" == *"#time"* ]]; then
+  is_smart_commit=true
+else
+  is_smart_commit=false
+fi
+
+# check that the jira credentials file exists
+check_jira_credentials
+
+# The total amount of time logged by the user today
+total_time=`get_total_time $jira_credentials`
 
 # If the branch has a ticket number and the commit is not a smart commit, prompt the user for time logging
 if [ "$ticket" != "" ] && [ "$is_smart_commit" = false ]; then
