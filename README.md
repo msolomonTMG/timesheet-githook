@@ -2,7 +2,7 @@
 Asks how long you worked on a commit then logs that amount of time to the corresponding JIRA ticket. Feel free to log issues or send PRs. Here is the [blog post](http://mike-solomon.com/timesheet-githook) if you'd like a walkthrough of the code or if you would like to leave comments, suggestions or share experiences.
 
 ## Example
-![example](http://i.imgur.com/1qM2ILI.gif)
+![example](http://i.imgur.com/s4v8eKS.gif)
 
 ## Setup
 ### Clone the Post Commit Hook
