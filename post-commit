@@ -61,7 +61,7 @@ get_total_time() {
 }
 
 log_time() {
-  echo "[post-commit hook] Time Logged Today: $total_time"
+  echo "[post-commit hook] Total Time Logged Today: $total_time"
   read -p "[post-commit hook] How long did that take to do? " time
   if [ "$time" = "" ]; then
     exit
