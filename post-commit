@@ -101,6 +101,14 @@ jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_cr
 # If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
 ticket=`parse_jira_ticket_in_branch`
 
+# skip hook if this commit is a merge
+# http://stackoverflow.com/a/3824122
+num_git_parents=$(git cat-file -p HEAD | grep -E "parent [a-zA-Z0-9]{40,}" -c)
+if [[ $num_git_parents -gt 1 ]]
+then
+  exit
+fi
+
 # Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
 commit_message=$(git log -1 HEAD --pretty=%B)
 if [[ "$commit_message" == *"#time"* ]]; then
