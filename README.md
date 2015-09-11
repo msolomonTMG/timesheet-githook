@@ -9,7 +9,7 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 - Steps
   1. Open your terminal and change directory to your github repository `` cd my-github-repository ``
   2. Run this command to change your directory to your git hooks folder (you need the back ticks) `` cd `git rev-parse --git-dir`/hooks ``
-  3. Clone the timesheet git hook and install dependencies with this command: `` git clone https://github.com/msolomonTMG/timesheet-githook.git && ln -s timesheet-githook/post-commit post-commit && chmod +x post-commit && chmod +x timesheet-githook/sum_time.rb && sudo gem install bundler && bundle install ``
+  3. Clone the timesheet git hook and install dependencies with this command: `` git clone https://github.com/msolomonTMG/timesheet-githook.git && ln -s timesheet-githook/post-commit post-commit && chmod +x post-commit && chmod +x timesheet-githook/sum_time.rb && cd timesheet-githook && sudo gem install bundler && bundle install ``
   - Be sure to change the JIRA url if you are not from my organization :)
 
 ## Usage
