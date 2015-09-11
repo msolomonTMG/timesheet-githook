@@ -22,5 +22,3 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 
 ## Notes
 - I welcome pull requests to make this better!
-- I want an update to not show the message if the commit is a merge
-  - [This stack overflow article](http://stackoverflow.com/questions/3824050/telling-if-a-git-commit-is-a-merge-revert-commit) seems like a good place to start for this
