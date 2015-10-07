@@ -5,7 +5,7 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 ![example](http://i.imgur.com/s4v8eKS.gif)
 
 ## Setup
-```curl -sSL https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/master/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/master/install.sh | bash
 
 ## Usage
 - When you commit on a branch that has a JIRA ticket in the name and you do not log time through a [smart commit](https://confluence.atlassian.com/display/FISHEYE/Using+smart+commits#Usingsmartcommits-TransitionyourJIRAissues), a message will pop up asking how long that commit took to code.
