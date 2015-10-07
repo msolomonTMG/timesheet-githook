@@ -5,12 +5,7 @@ Asks how long you worked on a commit then logs that amount of time to the corres
 ![example](http://i.imgur.com/s4v8eKS.gif)
 
 ## Setup
-### Clone the Post Commit Hook
-- Steps
-  1. Open your terminal and change directory to your github repository `` cd my-github-repository ``
-  2. Run this command to change your directory to your git hooks folder (you need the back ticks) `` cd `git rev-parse --git-dir`/hooks ``
-  3. Clone the timesheet git hook and install dependencies with this command: `` git clone https://github.com/msolomonTMG/timesheet-githook.git && ln -s timesheet-githook/post-commit post-commit && chmod +x post-commit && chmod +x timesheet-githook/sum_time.rb && cd timesheet-githook && sudo gem install bundler && bundle install ``
-  - Be sure to change the JIRA url if you are not from my organization :)
+```curl -sSL https://raw.githubusercontent.com/msolomonTMG/timesheet-githook/master/install.sh | bash
 
 ## Usage
 - When you commit on a branch that has a JIRA ticket in the name and you do not log time through a [smart commit](https://confluence.atlassian.com/display/FISHEYE/Using+smart+commits#Usingsmartcommits-TransitionyourJIRAissues), a message will pop up asking how long that commit took to code.
