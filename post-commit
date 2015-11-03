@@ -25,9 +25,10 @@ parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
 
-# Parse the JIRA ticket in the branch
-parse_jira_ticket_in_branch() {
-  parse_git_branch | grep -e '[A-Za-z]\+-[0-9]\+' -o
+# Parse the parameter for a JIRA ticket
+parse_jira_ticket() {
+  echo $1 | grep -e '[A-Za-z]\+-[0-9]\+' -o
+  #grep '[A-Za-z]\+-[0-9]\+' $1
 }
 
 # function for checking the existance of jira credentials
@@ -98,8 +99,8 @@ log_time() {
 # Read JIRA credentials if they exist
 jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_credentials.txt"
 
-# If the user's branch does not include a JIRA ticket number, they are not eligible to log time with this hook
-ticket=`parse_jira_ticket_in_branch`
+# Get the branch name
+git_branch=`parse_git_branch`
 
 # Find out if this is a smart commit (e.g. git commit -m "JQWE-123 #time 1h #comment fixed it" will log 1 hour already)
 commit_message=$(git log -1 HEAD --pretty=%B)
@@ -107,6 +108,18 @@ if [[ "$commit_message" == *"#time"* ]]; then
   is_smart_commit=true
 else
   is_smart_commit=false
+fi
+
+# Check for a ticket in the branch name
+ticket_in_branch=`parse_jira_ticket $git_branch`
+
+# If the user explicitly mentioned a ticket in their commit message, that ticket trumps the git branch name ticket
+ticket_in_commit_message=`parse_jira_ticket $commit_message`
+
+if [ "$ticket_in_commit_message" != "" ]; then
+  ticket=$ticket_in_commit_message
+else
+  ticket=$ticket_in_branch
 fi
 
 # check that the jira credentials file exists
