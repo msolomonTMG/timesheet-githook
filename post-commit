@@ -28,7 +28,6 @@ parse_git_branch() {
 # Parse the parameter for a JIRA ticket
 parse_jira_ticket() {
   echo $1 | grep -e '[A-Za-z]\+-[0-9]\+' -o
-  #grep '[A-Za-z]\+-[0-9]\+' $1
 }
 
 # function for checking the existance of jira credentials
