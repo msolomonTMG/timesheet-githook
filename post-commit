@@ -1,13 +1,14 @@
 #!/bin/sh
 
-# Sets JIRA URL
-jira_url="https://thrillistmediagroup.atlassian.net"
-
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
-# Ask for JIRA credentials and store the base64 encoded version of what the user enters
-parse_jira_credentials() {
+# Ask for JIRA credentials/url and store the base64 encoded version of what the user enters
+parse_jira_data() {
+  echo "Please enter your JIRA subdomain"
+  echo "Example: I would type 'thrillistmediagroup' because my JIRA url is: https://thrillistmediagroup.atlassian.net"
+  read jira_url;
+
   echo "Please enter your jira username (not your email): "; 
   read username;  
   
@@ -20,6 +21,7 @@ parse_jira_credentials() {
   old_umask=`umask`
   umask 0077
   echo "$jira_credentials" > "$jira_credentials_file"
+  echo "$jira_url" > "$jira_url_file"
   umask $old_umask
 }
 
@@ -34,12 +36,13 @@ parse_jira_ticket() {
 }
 
 # function for checking the existance of jira credentials
-check_jira_credentials() {
-  # If the user does not have jira credentials stored, we'll need to ask them to enter credentials
-  if [ -e "$jira_credentials_file" ]; then
+check_jira_data() {
+  # If the user does not have jira credentials and jira ul stored, we'll need to ask them to enter credentials and url
+  if [ -e "$jira_credentials_file" ] && [ -e "$jira_url_file" ]; then
     jira_credentials=$(cat "$jira_credentials_file")
+    jira_url=$(cat "$jira_url_file")
   else
-    parse_jira_credentials
+    parse_jira_data
   fi
 }
 
@@ -51,7 +54,7 @@ get_total_time() {
   username=${usernamepassword%:*}
   # Export these variables so that they can be used in the ruby file
   export JIRA_CREDENTIALS=$1
-  export JIRA_URL=$jira_url
+  export JIRA_URL=$2
   export USERNAME=$username
   # Use a ruby script to query JIRA for all the time that this user has already logged today
   total_time=$(ruby `git rev-parse --git-dir`/hooks/timesheet-githook/sum_time.rb)
@@ -75,7 +78,7 @@ log_time() {
     elif [[ $response =~ "401 Unauthorized" ]]; then
       read -p "[post-commit hook] $time was not logged successfully to $ticket. If you have updated your credentials in JIRA, press 'u' to update them here so that this hook works on your next commit. Otherwise, hit enter to ignore. " option
       if [[ $option == "u" ]]; then
-        parse_jira_credentials
+        parse_jira_data
       else
         exit
       fi
@@ -132,11 +135,11 @@ else
   ticket=$ticket_in_branch
 fi
 
-# check that the jira credentials file exists
-check_jira_credentials
+# check that the jira credentials file and url exists
+check_jira_data
 
 # The total amount of time logged by the user today
-total_time=`get_total_time $jira_credentials`
+total_time=`get_total_time $jira_credentials $jira_url`
 
 # If the branch has a ticket number and the commit is not a smart commit, prompt the user for time logging
 if [ "$ticket" != "" ] && [ "$is_smart_commit" = false ]; then
