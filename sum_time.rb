@@ -20,7 +20,7 @@ def sum_time(worklogs)
 end
 
 # Find all worklogs for this user today
-url = "#{ENV['JIRA_URL']}/rest/tempo-timesheets/3/worklogs"
+url = "https://#{ENV['JIRA_URL']}.atlassian.net/rest/tempo-timesheets/3/worklogs"
 headers = { 
   :"Authorization" => "Basic #{ENV['JIRA_CREDENTIALS']}",
   :"Content-Type" => "application/json"
@@ -30,6 +30,9 @@ response = RestClient.get(url, headers){ |response, request, result, &block|
   case response.code
   when 401
     puts "unauthorized"
+    exit
+  when 502
+    puts "bad gateway"
     exit
   else
     sum_time response
