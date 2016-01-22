@@ -3,12 +3,21 @@
 # Allows us to read user input below, assigns stdin to keyboard
 exec < /dev/tty
 
-# Ask for JIRA credentials/url and store the base64 encoded version of what the user enters
-parse_jira_data() {
+# Ask for JIRA subdomain
+parse_jira_subdomain() {
   echo "Please enter your JIRA subdomain"
   echo "Example: I would type 'thrillistmediagroup' because my JIRA url is: https://thrillistmediagroup.atlassian.net"
-  read jira_url;
+  read jira_subdomain;
+  jira_subdomain=$(printf "$jira_subdomain")
 
+  old_umask=`umask`
+  umask 0077
+  echo "$jira_subdomain" > "$jira_subdomain_file"
+  umask $old_umask
+}
+
+# Ask for JIRA credentials/url and store the base64 encoded version of what the user enters
+parse_jira_credentials() {
   echo "Please enter your jira username (not your email): "; 
   read username;  
   
@@ -18,11 +27,9 @@ parse_jira_data() {
   stty echo
 
   jira_credentials=$(printf "$username":"$password" | base64)
-  jira_url=$(printf "$jira_url")
   old_umask=`umask`
   umask 0077
   echo "$jira_credentials" > "$jira_credentials_file"
-  echo "$jira_url" > "$jira_url_file"
   umask $old_umask
 }
 
@@ -36,14 +43,20 @@ parse_jira_ticket() {
   echo $1 | grep -e '[A-Za-z]\+-[0-9]\+' -o
 }
 
-# function for checking the existance of jira credentials
+# function for checking the existence of jira credentials and jira subdomain
 check_jira_data() {
-  # If the user does not have jira credentials and jira ul stored, we'll need to ask them to enter credentials and url
-  if [ -e "$jira_credentials_file" ] && [ -e "$jira_url_file" ]; then
+  # If the user does not have jira credentials stored, we'll need to ask them to enter credentials
+  if [ -e "$jira_credentials_file" ]; then
     jira_credentials=$(cat "$jira_credentials_file")
-    jira_url=$(cat "$jira_url_file")
   else
-    parse_jira_data
+    parse_jira_credentials
+  fi
+
+  # If the user does not have jira subdomain stored, we'll need to ask them to enter the subdomain
+  if [ -e "$jira_subdomain_file" ]; then
+    jira_subdomain=$(cat "$jira_subdomain_file")
+  else
+    parse_jira_subdomain
   fi
 }
 
@@ -55,7 +68,7 @@ get_total_time() {
   username=${usernamepassword%:*}
   # Export these variables so that they can be used in the ruby file
   export JIRA_CREDENTIALS=$1
-  export JIRA_URL=$2
+  export JIRA_SUBDOMAIN=$2
   export USERNAME=$username
   # Use a ruby script to query JIRA for all the time that this user has already logged today
   total_time=$(ruby `git rev-parse --git-dir`/hooks/timesheet-githook/sum_time.rb)
@@ -73,13 +86,13 @@ log_time() {
   if [ "$time" = "" ]; then
     exit
   else
-    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\",\"comment\":\"$commit_message\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://$jira_url.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
+    response=$(eval curl "-D- --write-out %{http_code} --silent --output /dev/null -X POST -d '{\"timeSpent\":\"$time\",\"comment\":\"$commit_message\"}' -H 'Authorization: Basic $1' -H 'Content-Type: application/json' https://$jira_subdomain.atlassian.net/rest/api/2/issue/\"$2\"/worklog")
     if [[ $response =~ "201 Created" ]]; then
       echo "[post-commit hook] $time successfully logged to $ticket!"
     elif [[ $response =~ "401 Unauthorized" ]]; then
-      read -p "[post-commit hook] $time was not logged successfully to $ticket. If you have updated your credentials in JIRA, press 'u' to update them here so that this hook works on your next commit. Otherwise, hit enter to ignore. " option
-      if [[ $option == "u" ]]; then
-        parse_jira_data
+      read -p "[post-commit hook] $time was not logged successfully to $ticket. Looks like your JIRA credentials are not proper. Would you like to update them? (y/n) " option
+      if [[ $option == "y" ]] || [ $option == "Y" ]; then
+        parse_jira_credentials
       else
         exit
       fi
@@ -93,7 +106,7 @@ log_time() {
     elif [[ $response =~ "502 Bad Gateway" ]]; then
       read -p "[post-commit hook] $time was not logged successfully to $ticket. Looks like your URL is not proper. Would you like to change it? (y/n) " option
       if [ $option == "y" ] || [ $option == "Y" ]; then
-        parse_jira_data
+        parse_jira_subdomain
       else
         exit
       fi
@@ -113,7 +126,7 @@ log_time() {
 jira_credentials_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_credentials.txt"
 
 # Read JIRA url if it exists
-jira_url_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_url.txt"
+jira_subdomain_file="`git rev-parse --git-dir`/hooks/timesheet-githook/jira_subdomain.txt"
 
 # Get the branch name
 git_branch=`parse_git_branch`
@@ -150,7 +163,7 @@ fi
 check_jira_data
 
 # The total amount of time logged by the user today
-total_time=`get_total_time $jira_credentials $jira_url`
+total_time=`get_total_time $jira_credentials $jira_subdomain`
 
 # If the branch has a ticket number and the commit is not a smart commit, prompt the user for time logging
 if [ "$ticket" != "" ] && [ "$is_smart_commit" = false ]; then

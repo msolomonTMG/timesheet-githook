@@ -20,7 +20,7 @@ def sum_time(worklogs)
 end
 
 # Find all worklogs for this user today
-url = "https://#{ENV['JIRA_URL']}.atlassian.net/rest/tempo-timesheets/3/worklogs"
+url = "https://#{ENV['JIRA_SUBDOMAIN']}.atlassian.net/rest/tempo-timesheets/3/worklogs"
 headers = { 
   :"Authorization" => "Basic #{ENV['JIRA_CREDENTIALS']}",
   :"Content-Type" => "application/json"
